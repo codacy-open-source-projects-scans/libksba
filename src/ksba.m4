@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2024-05-14
+# Last-changed: 2024-06-13
 
 dnl
 dnl Find gpgrt-config, which uses .pc file
@@ -82,17 +82,16 @@ AC_DEFUN([_AM_PATH_GPGRT_CONFIG],[dnl
   fi
 
   if test -n "$gpgrt_libdir"; then
+    # Add the --libdir option to GPGRT_CONFIG
     GPGRT_CONFIG="$GPGRT_CONFIG --libdir=$gpgrt_libdir"
-    if $GPGRT_CONFIG gpg-error >/dev/null 2>&1; then
-      GPG_ERROR_CONFIG="$GPGRT_CONFIG gpg-error"
-      AC_MSG_NOTICE([Use gpgrt-config with $gpgrt_libdir as gpg-error-config])
-      gpg_error_config_version=`$GPG_ERROR_CONFIG --modversion`
-    else
-      gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+    # Make sure if gpgrt-config really works, by testing config gpg-error
+    if ! $GPGRT_CONFIG gpg-error --exists; then
+      # If it doesn't work, clear the GPGRT_CONFIG variable.
       unset GPGRT_CONFIG
     fi
-  elif test "$GPG_ERROR_CONFIG" != "no"; then
-    gpg_error_config_version=`$GPG_ERROR_CONFIG --version`
+  else
+    # GPGRT_CONFIG found but no suitable dir for --libdir found.
+    # This is a failure.  Clear the GPGRT_CONFIG variable.
     unset GPGRT_CONFIG
   fi
 ])
@@ -100,9 +99,9 @@ AC_DEFUN([_AM_PATH_GPGRT_CONFIG],[dnl
 dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libksba and define KSBA_CFLAGS and KSBA_LIBS
-dnl MINIMUN-VERSION is a string with the version number optionalliy prefixed
+dnl MINIMUM-VERSION is a string with the version number optionally prefixed
 dnl with the API version to also check the API compatibility. Example:
-dnl a MINIMUN-VERSION of 1:1.0.7 won't pass the test unless the installed
+dnl a MINIMUM-VERSION of 1:1.0.7 won't pass the test unless the installed
 dnl version of libksba is at least 1.0.7 *and* the API number is 1.  Using
 dnl this features allows to prevent build against newer versions of libksba
 dnl with a changed API.
