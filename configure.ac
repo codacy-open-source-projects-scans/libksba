@@ -129,8 +129,6 @@ AH_TOP([
 #ifndef _KSBA_CONFIG_H_INCLUDED
 #define _KSBA_CONFIG_H_INCLUDED
 
-/* Enable gpg-error's strerror macro for W32CE.  */
-#define GPG_ERR_ENABLE_ERRNO_MACROS 1
 ])
 
 AH_BOTTOM([
@@ -416,7 +414,7 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_KSBA,
           [The default error source for libksba.])
 
 AM_CONDITIONAL(USE_GPGRT_CONFIG, [test -n "$GPGRT_CONFIG" \
-                                  -a "$ac_cv_path_GPG_ERROR_CONFIG" = no])
+                                  && test "$ac_cv_path_GPG_ERROR_CONFIG" = no])
 
 # Checks for header files.
 
