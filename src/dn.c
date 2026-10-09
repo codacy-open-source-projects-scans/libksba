@@ -152,6 +152,7 @@ append_utf8_value (const unsigned char *value, size_t length,
   const unsigned char *s;
   size_t n;
   int i, nmore;
+  int space_at_the_end = 0;
 
   if (length && (*value == ' ' || *value == '#'))
     {
@@ -163,9 +164,7 @@ append_utf8_value (const unsigned char *value, size_t length,
     }
   if (length && value[length-1] == ' ')
     {
-      tmp[0] = '\\';
-      tmp[1] = ' ';
-      put_stringbuf_mem (sb, tmp, 2);
+      space_at_the_end = 1;
       length--;
     }
 
@@ -212,6 +211,13 @@ append_utf8_value (const unsigned char *value, size_t length,
           put_stringbuf_mem (sb, tmp, i);
         }
     }
+
+  if (space_at_the_end)
+    {
+      tmp[0] = '\\';
+      tmp[1] = ' ';
+      put_stringbuf_mem (sb, tmp, 2);
+    }
 }
 
 /* Append VALUE of LENGTH and TYPE to SB.  Do character set conversion
@@ -223,6 +229,7 @@ append_latin1_value (const unsigned char *value, size_t length,
   unsigned char tmp[2];
   const unsigned char *s;
   size_t n;
+  int space_at_the_end = 0;
 
   if (length && (*value == ' ' || *value == '#'))
     {
@@ -234,9 +241,7 @@ append_latin1_value (const unsigned char *value, size_t length,
     }
   if (length && value[length-1] == ' ')
     {
-      tmp[0] = '\\';
-      tmp[1] = ' ';
-      put_stringbuf_mem (sb, tmp, 2);
+      space_at_the_end = 1;
       length--;
     }
 
@@ -254,6 +259,13 @@ append_latin1_value (const unsigned char *value, size_t length,
       put_stringbuf_mem (sb, tmp, 2);
       n++; s++;
     }
+
+  if (space_at_the_end)
+    {
+      tmp[0] = '\\';
+      tmp[1] = ' ';
+      put_stringbuf_mem (sb, tmp, 2);
+    }
 }
 
 /* Append VALUE of LENGTH and TYPE to SB.  Do UCS-4 to utf conversion
@@ -267,21 +279,21 @@ append_ucs4_value (const unsigned char *value, size_t length,
   size_t n;
   unsigned int c;
   int i;
+  int space_at_the_end = 0;
 
   if (length>3 && !value[0] && !value[1] && !value[2]
       && (value[3] == ' ' || value[3] == '#'))
     {
       tmp[0] = '\\';
-      tmp[1] = *value;
+      tmp[1] = value[3];
       put_stringbuf_mem (sb, tmp, 2);
       value += 4;
       length -= 4;
     }
-  if (length>3 && !value[0] && !value[1] && !value[2] && value[3] == ' ')
+  if (!(length & 3) && length >= 4 && !value[length-4] && !value[length-3]
+      && !value[length-2] && value[length-1] == ' ')
     {
-      tmp[0] = '\\';
-      tmp[1] = ' ';
-      put_stringbuf_mem (sb, tmp, 2);
+      space_at_the_end = 1;
       length -= 4;
     }
 
@@ -294,7 +306,7 @@ append_ucs4_value (const unsigned char *value, size_t length,
         append_quoted (sb, value, s-value, 3);
       if (n>=length)
         return; /* ready */
-      if (n < 4)
+      if (length - n < 4)
         { /* This is an invalid encoding - better stop after adding
              one impossible characater */
           put_stringbuf_mem (sb, "\xff", 1);
@@ -343,6 +355,13 @@ append_ucs4_value (const unsigned char *value, size_t length,
         }
       put_stringbuf_mem (sb, tmp, i);
     }
+
+  if (space_at_the_end)
+    {
+      tmp[0] = '\\';
+      tmp[1] = ' ';
+      put_stringbuf_mem (sb, tmp, 2);
+    }
 }
 
 /* Append VALUE of LENGTH and TYPE to SB.  Do UCS-2 to utf conversion
@@ -356,21 +375,21 @@ append_ucs2_value (const unsigned char *value, size_t length,
   size_t n;
   unsigned int c;
   int i;
+  int space_at_the_end = 0;
 
   if (length>1 && !value[0] && (value[1] == ' ' || value[1] == '#'))
     {
       tmp[0] = '\\';
-      tmp[1] = *value;
+      tmp[1] = value[1];
       put_stringbuf_mem (sb, tmp, 2);
       value += 2;
       length -= 2;
     }
-  if (length>1 && !value[0] && value[1] == ' ')
+  if (!(length & 1) && length >= 2
+      && !value[length-2] == 0 && value[length-1] == ' ')
     {
-      tmp[0] = '\\';
-      tmp[1] = ' ';
-      put_stringbuf_mem (sb, tmp, 2);
-      length -=2;
+      space_at_the_end = 1;
+      length -= 2;
     }
 
   for (s=value, n=0;;)
@@ -381,7 +400,7 @@ append_ucs2_value (const unsigned char *value, size_t length,
         append_quoted (sb, value, s-value, 1);
       if (n>=length)
         return; /* ready */
-      if (n < 2)
+      if (length - n < 2)
         { /* This is an invalid encoding - better stop after adding
              one impossible characater */
           put_stringbuf_mem (sb, "\xff", 1);
@@ -403,6 +422,13 @@ append_ucs2_value (const unsigned char *value, size_t length,
           tmp[i++] = 0x80 | ( c        & 0x3f);
         }
       put_stringbuf_mem (sb, tmp, i);
+    }
+
+  if (space_at_the_end)
+    {
+      tmp[0] = '\\';
+      tmp[1] = ' ';
+      put_stringbuf_mem (sb, tmp, 2);
     }
 }
 

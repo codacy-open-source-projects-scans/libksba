@@ -411,6 +411,15 @@ ksba_cms_get_cert (ksba_cms_t cms, int idx)
 
 
 gpg_error_t
+ksba_cms_get_attribute (ksba_cms_t cms, int signer, int idx, int unprotected,
+                        char **r_oid, unsigned char **r_der, size_t *r_derlen)
+{
+  return _ksba_cms_get_attribute (cms, signer, idx, unprotected,
+                                  r_oid, r_der, r_derlen);
+}
+
+
+gpg_error_t
 ksba_cms_get_message_digest (ksba_cms_t cms, int idx,
                              char **r_digest, size_t *r_digest_len)
 {
@@ -502,6 +511,13 @@ ksba_cms_add_smime_capability (ksba_cms_t cms, const char *oid,
   return _ksba_cms_add_smime_capability (cms, oid, der, derlen);
 }
 
+gpg_error_t
+ksba_cms_add_attribute (ksba_cms_t cms, int idx,
+                        const char *oid, int unprotected,
+                        const unsigned char *der, size_t derlen)
+{
+  return _ksba_cms_add_attribute (cms, idx, oid, unprotected, der, derlen);
+}
 
 gpg_error_t
 ksba_cms_set_message_digest (ksba_cms_t cms, int idx,

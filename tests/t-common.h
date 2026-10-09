@@ -79,14 +79,21 @@ prepend_srcdir (const char *fname)
 
 
 void
-print_hex (const unsigned char *p, size_t n)
+print_hex (const unsigned char *p, size_t n, int wrapindent)
 {
+  int count = 0;
+
   if (!p)
     fputs ("none", stdout);
   else
     {
       for (; n; n--, p++)
-        printf ("%02X", *p);
+        {
+          if (wrapindent && count && !(count % 32))
+            printf ("\n%*s", wrapindent, "");
+          printf ("%02X", *p);
+          count++;
+        }
     }
 }
 
@@ -95,6 +102,7 @@ void
 print_sexp (ksba_const_sexp_t p)
 {
   int level = 0;
+  int delim_seen = 0;
 
   if (!p)
     fputs ("[none]", stdout);
@@ -104,12 +112,14 @@ print_sexp (ksba_const_sexp_t p)
         {
           if (*p == '(')
             {
+              delim_seen = 1;
               putchar (*p);
               p++;
               level++;
             }
           else if (*p == ')')
             {
+              delim_seen = 1;
               putchar (*p);
               p++;
               if (--level <= 0 )
@@ -140,6 +150,8 @@ print_sexp (ksba_const_sexp_t p)
                        || (*s >= '0' && *s <= '9')
                        || *s == '-' || *s == '.'))
                   break;
+              if (!delim_seen)
+                putchar (' ');
               if (n < len)
                 {
                   putchar('#');
@@ -151,7 +163,9 @@ print_sexp (ksba_const_sexp_t p)
                 {
                   for (n=0; n < len; n++, p++)
                     putchar (*p);
+                  putchar (' ');
                 }
+              delim_seen = 0;
             }
         }
     }
